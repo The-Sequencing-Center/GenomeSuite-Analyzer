@@ -1,0 +1,70 @@
+# GenomeSuite Analyzer production deployment on AWS
+
+# create analyzer directory tree
+BASE_DIR="/home/ubuntu/analyzer"
+mkdir -p $BASE_DIR
+mkdir -p $BASE_DIR/data/INPUTS/POD5_FILES
+mkdir -p $BASE_DIR/data/INPUTS/FAST5_FILES
+mkdir -p $BASE_DIR/data/INPUTS/BAM_FILES
+mkdir -p $BASE_DIR/data/INPUTS/REF_FILES
+mkdir -p $BASE_DIR/data/OUTPUTS/analyzer_output
+mkdir -p $BASE_DIR/dorado_models
+mkdir -p $BASE_DIR/logs
+mkdir -p $BASE_DIR/dist
+
+# install pip
+sudo apt install python3-pip
+
+# install samtools
+sudo apt-get install samtools
+
+# install dorado in home directory
+https://cdn.oxfordnanoportal.com/software/analysis/dorado-0.7.2-linux-x64.tar.gz
+dorado-0.7.2-linux-x64
+set PATH variable
+
+# get dorado models
+dorado download --model all
+
+# reference genome 
+GCA_009914755.4_T2T-CHM13v2.0_genomic.fna.gz
+
+# install nvidia driver
+download correct driver from nvidia website
+https://www.nvidia.com/en-gb/drivers/
+sudo systemctl isolate multi-user.target
+sudo dpkg -i nvidia-driver-local-repo-ubuntu2204-550.90.07_1.0-1_amd64.deb
+sudo apt-get update
+sudo apt-get install -f
+save ami and launch a new instance with gpu's
+
+# clear files to set initial state for application
+cd /home/seqcenter/analyzer/utilities
+python fileUtil.py
+
+# create analyzer executable
+cd /home/seqcenter/analyzer
+pip freeze > requirements.txt
+pip install -r requirements.txt
+nohup pyinstaller --onefile --clean --add-data 'data:data' --add-data 'dorado_models:dorado_models' --add-data 'logs:logs' analyzer.py &
+nohup pyinstaller --onedir  --clean --add-data 'data:data' --add-data 'dorado_models:dorado_models' --add-data 'logs:logs' analyzer.py &
+nohup pyinstaller --onefile --clean --add-data 'data:data' --add-data 'dorado_models:dorado_models' --add-data 'logs:logs' analyzer-nebius.py &
+nohup pyinstaller --onedir  --clean --add-data 'data:data' --add-data 'dorado_models:dorado_models' --add-data 'logs:logs' analyzer-nebius.py &
+
+# executable file
+/home/seqcenter/analyzer/dist
+analyzer
+chmod +x analyzer
+
+# security configurations
+sudo apt update
+sudo apt upgrade
+in /etc/ssh/sshd_config, add
+PermitRootLogin without-password                # Disable password-based remote logins for the root user
+UseDNS no                                       # Disable sshd DNS checks
+sudo passwd -l root                             # disable local root access
+sudo shred -u /etc/ssh/*_key /etc/ssh/*_key.pub # Remove SSH host key pairs
+shred -u ~/.*history                            # delete history
+
+# cleanup
+Be sure to delete the .aws directory

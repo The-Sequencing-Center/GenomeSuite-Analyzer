@@ -1,0 +1,1 @@
+nohup time python analyzer.py -b seqcenter-samples -s test -f fast5 > analyzer.log 2>&1 &

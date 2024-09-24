@@ -1,0 +1,1 @@
+nohup time python analyzer.py -b seqcenter-samples -s test -f bam > analyzer.log 2>&1 &

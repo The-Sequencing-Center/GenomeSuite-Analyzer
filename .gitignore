@@ -1,0 +1,20 @@
+# directories
+analyzervenv/
+build/
+data/
+dist/
+dorado_models/
+logs/
+
+# files
+analyzer.log
+nohup.out
+.DS_Store
+src/sniffles.egg-info
+__pycache__
+*.pyc
+.rsync-ignore
+.idea/
+.idea/*
+.github/
+.github/*

@@ -1,0 +1,1 @@
+nohup time python3 analyzer-nebius.py -b seqcenter-samples -s test -f pod5 > analyzer.log 2>&1 &
